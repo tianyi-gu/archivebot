@@ -2,9 +2,20 @@ import requests
 import fitz
 import os
 import time
+import urllib.parse
 
-def download_pdf(url, output_path="original.pdf", max_retries=3, timeout=30):
+def download_pdf(url, output_dir="raw_corpus", max_retries=3, timeout=30):
+    # extract filename from URL
+    filename = os.path.basename(urllib.parse.urlparse(url).path)
+    
+    # create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # full path for the output file
+    output_path = os.path.join(output_dir, filename)
+    
     print(f"Downloading PDF from {url}...")
+    print(f"Will save as {output_path}")
     
     for attempt in range(max_retries):
         try:
@@ -32,10 +43,16 @@ def download_pdf(url, output_path="original.pdf", max_retries=3, timeout=30):
                 return None
 
 # compress the pdf
-def compress_pdf(input_path, output_path="compressed.pdf", dpi=100):
+def compress_pdf(input_path, output_dir="raw_corpus", dpi=20):
     if not os.path.exists(input_path):
         print(f"Input file {input_path} not found.")
         return None
+    
+    # Create compressed filename with same name but _compressed suffix
+    filename = os.path.basename(input_path)
+    base, ext = os.path.splitext(filename)
+    compressed_filename = f"{base}_compressed{ext}"
+    output_path = os.path.join(output_dir, compressed_filename)
         
     try:
         print(f"Compressing PDF {input_path}...")
