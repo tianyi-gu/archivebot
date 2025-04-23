@@ -8,13 +8,13 @@ from PIL import Image
 
 def pdf_to_text(pdf_path, output_path=None):
     
-    # If output path is not specified, create one based on the PDF filename
+    # if output path is not specified, create one based on the PDF filename
     if output_path is None:
         output_path = os.path.splitext(pdf_path)[0] + '.txt'
     
     print(f"Converting {pdf_path} to text...")
     
-    # Convert PDF to images
+    # convert PDF to images
     try:
         poppler_path = "/opt/homebrew/bin"
         
@@ -23,14 +23,14 @@ def pdf_to_text(pdf_path, output_path=None):
         print(f"Error converting PDF to images: {e}")
         return None
     
-    # Extract text from each page
+    # extract text from each page
     full_text = ""
     for i, page in enumerate(pages):
         print(f"Processing page {i+1}/{len(pages)}...")
         text = pytesseract.image_to_string(page)
         full_text += text + "\n\n"
     
-    # Write text to output file
+    # write text to output file
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(full_text)

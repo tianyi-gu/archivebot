@@ -43,7 +43,7 @@ def download_pdf(url, output_dir="raw_corpus", max_retries=3, timeout=30):
                 return None
 
 # compress the pdf
-def compress_pdf(input_path, output_dir="raw_corpus", dpi=20):
+def compress_pdf(input_path, output_dir="raw_corpus", dpi=50):
     if not os.path.exists(input_path):
         print(f"Input file {input_path} not found.")
         return None
