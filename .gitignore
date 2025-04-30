@@ -1,4 +1,4 @@
 /venv
 /raw_corpus/*.pdf 
 *.pdf
-./chunked_corpus/*
+chunked_corpus/*
