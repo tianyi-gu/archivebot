@@ -1,0 +1,9 @@
+torch
+transformers
+accelerate
+bitsandbytes
+sentence-transformers
+pdf2image
+pytesseract
+beautifulsoup4
+numpy 
