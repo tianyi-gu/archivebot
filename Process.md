@@ -4,6 +4,57 @@ Tianyi Gu for CSC600
 
 This document outlines the process of building ArchiveBot, a retrieval-augmented generation (RAG) system that enables intuitive, conversational access to archived materials from the Oliver Wendell Holmes library. It aims to serve as a way to understand the behind-the-scenes working to enable others to contribute to this project or take inspiration from it.
 
-## Process
+## Overview
 
-Archivebot can primarily be split into two different sections. 
+The system processes PDF documents through several stages:
+1. Web scraping and downloading PDFs
+2. PDF compression for efficient storage
+3. OCR (Optical Character Recognition) to extract text
+4. Text chunking for better retrieval
+5. Embedding generation for semantic search
+6. Vector search capabilities for retrieval
+
+## Component Workflow
+
+### 1. Web Scraping and PDF Collection (`webscrape.py`)
+
+The system begins by collecting PDFs from a web source:
+
+- `get_pdf_links_for_year(year)`: Scrapes a website for PDF links from a specific year
+- `download_pdf(url, output_dir)`: Downloads PDFs with retry logic and error handling
+- `compress_pdf(input_path, output_dir)`: Compresses PDFs to reduce storage requirements
+- `process_year(year, download_dir)`: Orchestrates the download and compression process for all PDFs from a specific year
+
+This component handles the initial data collection phase, which collects the corpus of the documents that will later be used for RAG. This can be adjusted to serve any set of collected documents, though the logic would have to be tweaked depending on the storage format. 
+
+### 2. PDF to Text Conversion (`pdf_to_text.py`)
+
+Once PDFs are collected, we extract text using OCR:
+
+- `pdf_to_text(pdf_path, output_path)`: Converts PDF pages to images and applies OCR to extract text
+- The extracted text is saved to text files that maintain the original document structure
+
+This step transforms the visual PDF content into text files that can be processed further. This may also be applicable if the desired collection of sources is in PDF format.
+
+### 3. Text Chunking (`text_chunker.py`)
+
+The extracted text is then divided into manageable chunks:
+
+- `chunk_text(text, chunk_size, overlap)`: Splits text into overlapping chunks of specified size
+- `create_metadata(file_path)`: Extracts metadata from filenames (e.g., dates)
+- `process_file(file_path, output_dir)`: Processes a single text file into chunks with metadata
+- `process_directory(input_dir, output_dir)`: Processes all text files in a directory
+
+Chunking is a super important step for effective retrieval, as it allows the system to return relevant portions of documents. It is essentially splitting the document into smaller, more manageable chunks that can be used for retrieval. 
+
+### 4. Embedding Generation (`embed_chunks.py`)
+
+The chunks are then converted into vector embeddings:
+
+- `load_chunks(file_path)`: Loads chunked text from JSON files
+- `generate_embeddings(chunks, model_name)`: Creates vector embeddings for each chunk
+- `save_embeddings(embedded_chunks, output_path)`: Saves the embeddings for future use
+- `vector_search(query, embedded_chunks, top_k)`: Performs semantic search on the embeddings
+
+This component enables semantic search by converting text into vector representations that capture meaning. Then, given a query, the system searches the embeddings to find the most relevant chunks. 
+
