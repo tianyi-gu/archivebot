@@ -3,6 +3,7 @@ import fitz
 import os
 import time
 import urllib.parse
+from bs4 import BeautifulSoup
 
 def download_pdf(url, output_dir="raw_corpus", max_retries=3, timeout=30):
     # extract filename from URL
@@ -48,7 +49,7 @@ def compress_pdf(input_path, output_dir="raw_corpus", dpi=50):
         print(f"Input file {input_path} not found.")
         return None
     
-    # Create compressed filename with same name but _compressed suffix
+    # create compressed filename with same name but _compressed suffix
     filename = os.path.basename(input_path)
     base, ext = os.path.splitext(filename)
     compressed_filename = f"{base}_compressed{ext}"
@@ -74,12 +75,61 @@ def compress_pdf(input_path, output_dir="raw_corpus", dpi=50):
         print(f"Error compressing PDF: {e}")
         return None
 
+def get_pdf_links_for_year(year):
+    # scrape the Phillipian archives page for a specific year and extract all PDF links.
+    
+    archive_url = f"https://archives.phillipian.net/explore?year={year}"
+    pdf_links = []
+    
+    try:
+        print(f"Fetching archive page for year {year}...")
+        response = requests.get(archive_url)
+        response.raise_for_status()
+        
+        # parse the HTML content
+        soup = BeautifulSoup(response.text, 'html.parser')
+        # print(soup)
+        # find all links that point to PDFs
+        for link in soup.find_all('a', href=True):
+            href = link['href']
+            if href.startswith(f"http://pdf.phillipian.net/{year}/") and href.endswith('.pdf'):
+                pdf_links.append(href)
+            # Also check for relative links
+            elif href.startswith(f"/{year}/") and href.endswith('.pdf'):
+                pdf_links.append(f"http://pdf.phillipian.net{href}")
+        
+        print(f"Found {len(pdf_links)} PDF links for year {year}")
+        return pdf_links
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching archive page: {e}")
+        return []
 
-url = "https://pdf.phillipian.net/2025/04182025.pdf"
+def process_year(year, download_dir="raw_corpus"):
+    # process all PDFs for a given year - download and compress each one.
+    
+    pdf_links = get_pdf_links_for_year(year)
+    
+    if not pdf_links:
+        print(f"No PDF links found for year {year}")
+        return
+    
+    for i, url in enumerate(pdf_links):
+        print(f"Processing PDF {i+1}/{len(pdf_links)}: {url}")
+        
+        # download the PDF
+        original_path = download_pdf(url, output_dir=download_dir)
+        
+        # compress the PDF if download was successful
+        if original_path:
+            compress_pdf(original_path, output_dir=download_dir)
+        
+        # add a small delay between requests to be nice to the server
+        if i < len(pdf_links) - 1:
+            time.sleep(2)
 
-# download the PDF
-original_path = download_pdf(url)
-
-# compress the PDF if download was successful
-if original_path:
-    compress_pdf(original_path)
+if __name__ == "__main__":
+    years_to_process = ["2025", "2024"]
+    
+    for year in years_to_process:
+        process_year(year)
