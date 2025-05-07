@@ -105,7 +105,10 @@ def main():
             print(f"\n{i+1}. Similarity: {result['similarity']:.4f}")
             print(f"   Chunk ID: {result['chunk']['chunk_id']}")
             print(f"   Date: {result['chunk']['metadata']['date']}")
-            print(f"   Text: {result['chunk']['text'][:150]}...")
+            print(f"   Source: {result['chunk']['metadata']['source']}")
+            print(f"   Full Text:")
+            print("   " + result['chunk']['text'].replace('\n', '\n   '))
+            print("-" * 80)
 
 if __name__ == "__main__":
     main() 
