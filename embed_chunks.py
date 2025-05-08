@@ -84,15 +84,12 @@ def main():
     # create output directory if it doesn't exist
     os.makedirs(os.path.dirname(args.output), exist_ok=True)
     
-    # load chunks
     chunks = load_chunks(args.input)
     if not chunks:
         return
     
-    # generate embeddings
     embedded_chunks = generate_embeddings(chunks, args.model)
     
-    # save embeddings
     save_embeddings(embedded_chunks, args.output)
     
     # test search if query is provided

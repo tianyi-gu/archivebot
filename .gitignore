@@ -2,3 +2,4 @@
 /raw_corpus/*.pdf 
 *.pdf
 chunked_corpus/*
+.DS_Store
