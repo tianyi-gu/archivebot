@@ -6,4 +6,5 @@ sentence-transformers
 pdf2image
 pytesseract
 beautifulsoup4
-numpy 
+numpy
+nltk 
