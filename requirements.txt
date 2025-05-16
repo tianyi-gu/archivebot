@@ -3,8 +3,12 @@ transformers
 accelerate
 bitsandbytes
 sentence-transformers
+PyMuPDF
 pdf2image
 pytesseract
 beautifulsoup4
+requests
 numpy
 nltk 
+pillow
+tqdm
