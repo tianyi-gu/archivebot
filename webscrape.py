@@ -2,6 +2,7 @@ import requests
 import fitz
 import os
 import time
+import json
 import urllib.parse
 from bs4 import BeautifulSoup
 
@@ -9,22 +10,23 @@ def download_pdf(url, output_dir="raw_corpus", max_retries=3, timeout=30):
     # extract filename from URL
     filename = os.path.basename(urllib.parse.urlparse(url).path)
     
-    # create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
-    
-    # full path for the output file
     output_path = os.path.join(output_dir, filename)
+    
+    # skip if already exists
+    base, ext = os.path.splitext(filename)
+    compressed_path = os.path.join(output_dir, f"{base}_compressed{ext}")
+    if os.path.exists(compressed_path):
+        print(f"Compressed version already exists at {compressed_path}, skipping download")
+        return None
     
     print(f"Downloading PDF from {url}...")
     print(f"Will save as {output_path}")
     
     for attempt in range(max_retries):
         try:
-            # set a timeout to avoid hanging
             response = requests.get(url, timeout=timeout, stream=True)
             response.raise_for_status() 
-            
-            # save the file in chunks to handle large files better
             with open(output_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
@@ -44,7 +46,7 @@ def download_pdf(url, output_dir="raw_corpus", max_retries=3, timeout=30):
                 return None
 
 # compress the pdf
-def compress_pdf(input_path, output_dir="raw_corpus", dpi=50):
+def compress_pdf(input_path, output_dir="raw_corpus", dpi=50, delete_original=True):
     if not os.path.exists(input_path):
         print(f"Input file {input_path} not found.")
         return None
@@ -69,6 +71,12 @@ def compress_pdf(input_path, output_dir="raw_corpus", dpi=50):
 
         output_pdf.save(output_path, deflate=True)
         print(f"Compressed PDF saved as '{output_path}'")
+        
+        # Delete original file if requested
+        if delete_original:
+            os.remove(input_path)
+            print(f"Deleted original file {input_path}")
+        
         return output_path
         
     except Exception as e:
@@ -117,14 +125,9 @@ def process_year(year, download_dir="raw_corpus"):
     for i, url in enumerate(pdf_links):
         print(f"Processing PDF {i+1}/{len(pdf_links)}: {url}")
         
-        # download the PDF
         original_path = download_pdf(url, output_dir=download_dir)
-        
-        # compress the PDF if download was successful
         if original_path:
-            compress_pdf(original_path, output_dir=download_dir)
-        
-        # add a small delay between requests to be nice to the server
+            compressed_path = compress_pdf(original_path, output_dir=download_dir, delete_original=True)
         if i < len(pdf_links) - 1:
             time.sleep(2)
 
