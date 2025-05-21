@@ -12,3 +12,4 @@ numpy
 nltk 
 pillow
 tqdm
+django
