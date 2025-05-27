@@ -58,7 +58,7 @@ This project aims to alleviate this issue by allowing users to query the archive
 ## To-dos and Future Steps
 - Filtering based on article type (excluding Eighth Page articles, etc.)
 - Linking to view original article PDF
-- UI testing for level of parameters able to be set
+- UI testing for level of parameters able to be set (currently the panel is more like an admin panel, users probably wouldn't actually see anything but the chat)
 - Additional weighting based on recency of source material
 
 Developed in the Computer Science 600 Research and Development Class at Phillips Academy. 
