@@ -37,3 +37,10 @@ var/
 
 .env
 .env.local
+
+# Text Corpus
+text_corpus/*
+chunked_corpus/*
+data/text_corpus/*
+data/chunked_corpus/*
+*.txt
