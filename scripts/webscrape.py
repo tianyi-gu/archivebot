@@ -132,7 +132,16 @@ def process_year(year, download_dir="raw_corpus"):
             time.sleep(2)
 
 if __name__ == "__main__":
-    years_to_process = ["2025", "2024"]
+    import sys
     
-    for year in years_to_process:
+    # Check if year is provided as command line argument
+    if len(sys.argv) > 1:
+        year = sys.argv[1]
+        print(f"Processing year {year} from command line argument")
         process_year(year)
+    else:
+        # Default behavior if no argument provided
+        years_to_process = ["2025"]
+        print("No year specified, processing default years")
+        for year in years_to_process:
+            process_year(year)

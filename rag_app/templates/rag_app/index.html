@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArchiveBot RAG Pipeline</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .progress {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9e9e9;
+            border-radius: 4px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        .chat-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            height: 300px;
+            overflow-y: auto;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            text-align: right;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+        }
+        .loading-message {
+            font-style: italic;
+            opacity: 0.7;
+        }
+    </style>
+    {% csrf_token %}
+</head>
+<body>
+    <h1>ArchiveBot RAG Pipeline</h1>
+    
+    <div class="container">
+        <div class="panel">
+            <h2>1. Web Scraping</h2>
+            <div>
+                <label for="years">Years to scrape (comma-separated):</label>
+                <input type="text" id="years" placeholder="2023,2022,2021">
+                <button id="scrapeBtn">Start Scraping</button>
+            </div>
+            <div class="progress" id="scrapeProgress">
+                <div>Status: <span id="scrapeStatus">Not started</span></div>
+                <div>Current year: <span id="scrapeYear">None</span></div>
+                <div>Progress: <span id="scrapeCompleted">0</span>/<span id="scrapeTotal">0</span></div>
+                <div>Percentage: <span id="scrapePercent">0%</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="scrapeProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>2. OCR Processing</h2>
+            <div>
+                <button id="ocrBtn">Start OCR</button>
+            </div>
+            <div class="progress" id="ocrProgress">
+                <div>Status: <span id="ocrStatus">Not started</span></div>
+                <div>Current file: <span id="ocrFile">None</span></div>
+                <div>Progress: <span id="ocrCompleted">0</span>/<span id="ocrTotal">0</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="ocrProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>3. Text Chunking</h2>
+            <div>
+                <label for="chunkMethod">Chunking method:</label>
+                <select id="chunkMethod">
+                    <option value="semantic">Semantic Chunking</option>
+                    <option value="fixed">Fixed-Size Chunking</option>
+                </select>
+                <button id="chunkBtn">Start Chunking</button>
+            </div>
+            <div class="progress" id="chunkProgress">
+                <div>Status: <span id="chunkStatus">Not started</span></div>
+                <div>Current file: <span id="chunkFile">None</span></div>
+                <div>Progress: <span id="chunkCompleted">0</span>/<span id="chunkTotal">0</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="chunkProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>4. Embedding Generation</h2>
+            <div>
+                <button id="embedBtn">Generate Embeddings</button>
+            </div>
+            <div class="progress" id="embedProgress">
+                <div>Status: <span id="embedStatus">Not started</span></div>
+                <div>Progress: <span id="embedCompleted">0</span>/<span id="embedTotal">0</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="embedProgressBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="panel" style="margin-top: 20px;">
+        <h2>5. Load Language Model</h2>
+        <div>
+            <label for="modelName">Model name:</label>
+            <input type="text" id="modelName" value="TinyLlama/TinyLlama-1.1B-Chat-v1.0">
+            <button id="loadModelBtn">Load Model</button>
+        </div>
+        <div class="progress" id="modelProgress">
+            <div>Status: <span id="modelStatus">Not loaded</span></div>
+            <div>Model: <span id="loadedModel">None</span></div>
+        </div>
+    </div>
+    
+    <div class="panel" style="margin-top: 20px;">
+        <h2>6. Chat with ArchiveBot</h2>
+        <div class="chat-container" id="chatContainer"></div>
+        <div style="display: flex; margin-top: 10px;">
+            <input type="text" id="queryInput" placeholder="Ask a question..." style="flex: 1;">
+            <button id="sendBtn" style="margin-left: 10px;">Send</button>
+        </div>
+    </div>
+    
+    <script>
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+        
+        // Function to update the UI with the current pipeline state
+        function updateStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update scraping status
+                    const scraping = data.scraping;
+                    document.getElementById('scrapeStatus').textContent = scraping.in_progress ? 'In progress' : 'Idle';
+                    document.getElementById('scrapeYear').textContent = scraping.current_year || 'None';
+                    document.getElementById('scrapeCompleted').textContent = scraping.completed_urls.length;
+                    document.getElementById('scrapeTotal').textContent = scraping.total_urls;
+                    document.getElementById('scrapeBtn').disabled = scraping.in_progress;
+                    
+                    // Add progress percentage and bar
+                    const scrapePercent = scraping.total_urls > 0 ? 
+                        Math.round((scraping.completed_urls.length / scraping.total_urls) * 100) : 0;
+                    document.getElementById('scrapePercent').textContent = `${scrapePercent}%`;
+                    document.getElementById('scrapeProgressBar').style.width = `${scrapePercent}%`;
+                    
+                    // Update OCR status
+                    const ocr = data.ocr;
+                    document.getElementById('ocrStatus').textContent = ocr.in_progress ? 'In progress' : 'Idle';
+                    document.getElementById('ocrFile').textContent = ocr.current_file || 'None';
+                    document.getElementById('ocrCompleted').textContent = ocr.completed_files.length;
+                    document.getElementById('ocrTotal').textContent = ocr.total_files;
+                    document.getElementById('ocrBtn').disabled = ocr.in_progress;
+                    
+                    const ocrPercent = ocr.total_files > 0 ? 
+                        Math.round((ocr.completed_files.length / ocr.total_files) * 100) : 0;
+                    document.getElementById('ocrProgressBar').style.width = `${ocrPercent}%`;
+                    
+                    // Update chunking status
+                    const chunking = data.chunking;
+                    document.getElementById('chunkStatus').textContent = chunking.in_progress ? 'In progress' : 'Idle';
+                    document.getElementById('chunkFile').textContent = chunking.current_file || 'None';
+                    document.getElementById('chunkCompleted').textContent = chunking.completed_files.length;
+                    document.getElementById('chunkTotal').textContent = chunking.total_files;
+                    document.getElementById('chunkBtn').disabled = chunking.in_progress;
+                    
+                    const chunkPercent = chunking.total_files > 0 ? 
+                        Math.round((chunking.completed_files.length / chunking.total_files) * 100) : 0;
+                    document.getElementById('chunkProgressBar').style.width = `${chunkPercent}%`;
+                    
+                    // Update embedding status
+                    const embedding = data.embedding;
+                    document.getElementById('embedStatus').textContent = embedding.in_progress ? 'In progress' : 'Idle';
+                    document.getElementById('embedCompleted').textContent = embedding.completed_chunks;
+                    document.getElementById('embedTotal').textContent = embedding.total_chunks;
+                    document.getElementById('embedBtn').disabled = embedding.in_progress;
+                    
+                    const embedPercent = embedding.total_chunks > 0 ? 
+                        Math.round((embedding.completed_chunks / embedding.total_chunks) * 100) : 0;
+                    document.getElementById('embedProgressBar').style.width = `${embedPercent}%`;
+                    
+                    // Update model status
+                    const model = data.model;
+                    document.getElementById('modelStatus').textContent = model.loaded ? 'Loaded' : 'Not loaded';
+                    document.getElementById('loadedModel').textContent = model.name || 'None';
+                    document.getElementById('loadModelBtn').disabled = model.loaded;
+                })
+                .catch(error => console.error('Error fetching status:', error));
+        }
+        
+        // Initialize and set up event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start periodic status updates
+            updateStatus();
+            setInterval(updateStatus, 2000);
+            
+            // Scraping button
+            document.getElementById('scrapeBtn').addEventListener('click', function() {
+                const years = document.getElementById('years').value.split(',').map(y => y.trim());
+                if (years.length === 0 || years[0] === '') {
+                    alert('Please enter at least one year');
+                    return;
+                }
+                
+                fetch('/api/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ years: years })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                    } else {
+                        // Immediately update status to show scraping has started
+                        document.getElementById('scrapeStatus').textContent = 'Starting...';
+                        document.getElementById('scrapeBtn').disabled = true;
+                    }
+                })
+                .catch(error => console.error('Error starting scraping:', error));
+            });
+            
+            // OCR button
+            document.getElementById('ocrBtn').addEventListener('click', function() {
+                fetch('/api/ocr', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => console.error('Error starting OCR:', error));
+            });
+            
+            // Chunking button
+            document.getElementById('chunkBtn').addEventListener('click', function() {
+                const semantic = document.getElementById('chunkMethod').value === 'semantic';
+                
+                fetch('/api/chunk', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ semantic: semantic })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => console.error('Error starting chunking:', error));
+            });
+            
+            // Embedding button
+            document.getElementById('embedBtn').addEventListener('click', function() {
+                fetch('/api/embed', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => console.error('Error starting embedding generation:', error));
+            });
+            
+            // Load model button
+            document.getElementById('loadModelBtn').addEventListener('click', function() {
+                const modelName = document.getElementById('modelName').value;
+                
+                fetch('/api/load_model', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ model_name: modelName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => console.error('Error loading model:', error));
+            });
+            
+            // Load chat history
+            fetch('/api/chat_history')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.messages && data.messages.length > 0) {
+                        data.messages.forEach(msg => {
+                            addMessage(msg.content, msg.sender);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error loading chat history:', error));
+            
+            // Chat functionality
+            document.getElementById('sendBtn').addEventListener('click', function() {
+                sendQuery();
+            });
+            
+            document.getElementById('queryInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendQuery();
+                }
+            });
+            
+            function sendQuery() {
+                const query = document.getElementById('queryInput').value.trim();
+                if (!query) return;
+                
+                // Add user message to chat
+                addMessage(query, 'user');
+                document.getElementById('queryInput').value = '';
+                
+                // Show loading indicator
+                addMessage('Thinking...', 'bot', true);
+                
+                fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ query: query })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Remove loading indicator
+                    const loadingElement = document.querySelector('.loading-message');
+                    if (loadingElement) {
+                        loadingElement.remove();
+                    }
+                    
+                    if (data.error) {
+                        addMessage('Error: ' + data.error, 'bot');
+                    } else {
+                        addMessage(data.response, 'bot');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending query:', error);
+                    // Remove loading indicator
+                    const loadingElement = document.querySelector('.loading-message');
+                    if (loadingElement) {
+                        loadingElement.remove();
+                    }
+                    addMessage('Error communicating with server', 'bot');
+                });
+            }
+            
+            function addMessage(text, sender, isLoading = false) {
+                const chatContainer = document.getElementById('chatContainer');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                if (isLoading) {
+                    messageDiv.className += ' loading-message';
+                }
+                messageDiv.textContent = text;
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html> 
