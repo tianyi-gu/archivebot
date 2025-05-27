@@ -12,70 +12,121 @@ import sys
 def run_scraping(years, state):
     """Run the web scraping process for the specified years"""
     try:
-        # First, estimate total URLs by doing a quick scan
-        print("Estimating total URLs to scrape...")
-        estimated_total = 0
+        print("=== Starting scraping process ===")
         
-        for year in years:
-            try:
-                # For now, we'll estimate based on typical archive sizes
-                estimated_total += 30  
-            except:
-                pass
-        
-        state.scraping_total_urls = estimated_total
+        # Reset state at the beginning
+        state.scraping_completed_urls = []
+        state.scraping_failed_urls = []
+        state.scraping_total_urls = 0
         state.save()
         
-        # Now do the actual scraping
+        # Process each year individually
         for year in years:
+            print(f"\n--- Processing year {year} ---")
             state.scraping_current_year = year
             state.save()
-            print(f"Scraping archives for year {year}...")
             
             # Call the webscrape.py script for each year
             script_path = os.path.join(settings.BASE_DIR, "scripts", "webscrape.py")
+            
+            if not os.path.exists(script_path):
+                print(f"ERROR: Script not found at {script_path}")
+                continue
+            
             cmd = ["python", script_path, year]
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            print(f"Running command: {' '.join(cmd)}")
             
-            # Monitor the process output to update state
-            for line in process.stdout:
-                print(line.strip())
-                if "Successfully downloaded" in line:
-                    url = line.split("from ")[-1].strip()
-                    current_completed = state.scraping_completed_urls.copy()
-                    current_completed.append(url)
-                    state.scraping_completed_urls = current_completed
-                    state.save()
-                elif "Download failed" in line:
-                    url = line.split("for ")[-1].strip()
-                    current_failed = state.scraping_failed_urls.copy()
-                    current_failed.append(url)
-                    state.scraping_failed_urls = current_failed
-                    state.save()
-                elif "Found" in line and "PDF links" in line:
-                    try:
-                        count = int(line.split("Found ")[1].split(" PDF")[0])
-                        # Update total with actual count
-                        state.scraping_total_urls = max(state.scraping_total_urls, 
-                                                      len(state.scraping_completed_urls) + 
-                                                      len(state.scraping_failed_urls) + count)
-                        state.save()
-                    except:
-                        pass
-            
-            process.wait()
+            try:
+                # Use real-time output processing
+                process = subprocess.Popen(
+                    cmd, 
+                    stdout=subprocess.PIPE, 
+                    stderr=subprocess.PIPE, 
+                    text=True,
+                    bufsize=1,  # Line buffered
+                    universal_newlines=True,
+                    cwd=settings.BASE_DIR
+                )
+                
+                print("Process started, monitoring output...")
+                
+                # Read output line by line in real-time
+                while True:
+                    output = process.stdout.readline()
+                    if output == '' and process.poll() is not None:
+                        break
+                    if output:
+                        line = output.strip()
+                        print(f"SCRAPER: {line}")
+                        
+                        # Update progress based on output
+                        if "Found" in line and "PDF links" in line:
+                            try:
+                                count = int(line.split("Found ")[1].split(" PDF")[0])
+                                state.scraping_total_urls = count  # Set actual total, not add
+                                state.save()
+                                print(f"Set total URLs to: {state.scraping_total_urls}")
+                            except Exception as e:
+                                print(f"Error parsing PDF count: {e}")
+                        
+                        elif "Processing PDF" in line and "/" in line:
+                            # Extract current progress from "Processing PDF X/Y:"
+                            try:
+                                parts = line.split("Processing PDF ")[1].split(":")
+                                progress_part = parts[0].strip()  # "X/Y"
+                                current_num = int(progress_part.split("/")[0])
+                                total_num = int(progress_part.split("/")[1])
+                                
+                                # Update completed count to match current processing
+                                # We'll count this as completed since it's being processed
+                                while len(state.scraping_completed_urls) < current_num:
+                                    state.scraping_completed_urls.append(f"PDF {len(state.scraping_completed_urls) + 1}")
+                                
+                                state.save()
+                                print(f"Progress: {len(state.scraping_completed_urls)}/{state.scraping_total_urls}")
+                            except Exception as e:
+                                print(f"Error parsing progress: {e}")
+                        
+                        elif "already exists" in line and "skipping" in line:
+                            # Count skipped files as completed
+                            current_completed_list = state.scraping_completed_urls.copy()
+                            current_completed_list.append("Skipped (already exists)")
+                            state.scraping_completed_urls = current_completed_list
+                            state.save()
+                            print(f"Skipped file counted. Progress: {len(current_completed_list)}/{state.scraping_total_urls}")
+                        
+                        elif "Successfully downloaded" in line:
+                            # Count successful downloads
+                            current_completed_list = state.scraping_completed_urls.copy()
+                            current_completed_list.append("Downloaded")
+                            state.scraping_completed_urls = current_completed_list
+                            state.save()
+                            print(f"Download counted. Progress: {len(current_completed_list)}/{state.scraping_total_urls}")
+                
+                # Get any remaining output
+                stderr_output = process.stderr.read()
+                if stderr_output:
+                    print(f"STDERR: {stderr_output}")
+                
+                return_code = process.poll()
+                print(f"Process finished with return code: {return_code}")
+                
+            except Exception as e:
+                print(f"Error running scraper for year {year}: {e}")
+                import traceback
+                traceback.print_exc()
     
     except Exception as e:
         print(f"Error in scraping process: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
-        # Ensure we have accurate totals
-        total_processed = len(state.scraping_completed_urls) + len(state.scraping_failed_urls)
-        if state.scraping_total_urls < total_processed:
-            state.scraping_total_urls = total_processed
-            state.save()
+        print(f"=== Scraping process finished ===")
+        total_completed = len(state.scraping_completed_urls)
+        print(f"Final stats - Completed: {total_completed}, Total: {state.scraping_total_urls}")
 
-def run_ocr(state, input_dir=None, output_dir=None):
-    """Run OCR on all compressed PDFs in the input directory"""
+def run_ocr(state, input_dir=None, output_dir=None, years_filter=None):
+    """Run OCR on compressed PDFs, optionally filtered by years"""
     if input_dir is None:
         input_dir = str(settings.RAW_CORPUS_DIR)
     if output_dir is None:
@@ -86,7 +137,22 @@ def run_ocr(state, input_dir=None, output_dir=None):
         os.makedirs(output_dir, exist_ok=True)
         
         # Get all compressed PDF files
-        pdf_files = [f for f in os.listdir(input_dir) if f.endswith("_compressed.pdf")]
+        all_pdf_files = [f for f in os.listdir(input_dir) if f.endswith("_compressed.pdf")]
+        
+        # Filter by years if specified
+        if years_filter:
+            pdf_files = []
+            for pdf_file in all_pdf_files:
+                # Check if any of the specified years appears in the filename
+                for year in years_filter:
+                    if year in pdf_file:
+                        pdf_files.append(pdf_file)
+                        break
+            print(f"Filtered {len(all_pdf_files)} files down to {len(pdf_files)} files for years {years_filter}")
+        else:
+            pdf_files = all_pdf_files
+            print(f"Processing all {len(pdf_files)} compressed PDF files")
+        
         state.ocr_total_files = len(pdf_files)
         state.save()
         
@@ -106,6 +172,7 @@ def run_ocr(state, input_dir=None, output_dir=None):
             if os.path.exists(output_path):
                 state.ocr_completed_files.append(pdf_file)
                 state.save()
+                print(f"Skipping {pdf_file} - text file already exists")
                 continue
             
             print(f"Running OCR on {pdf_file}...")
@@ -126,8 +193,10 @@ def run_ocr(state, input_dir=None, output_dir=None):
             
             if success:
                 state.ocr_completed_files.append(pdf_file)
+                print(f"Successfully processed {pdf_file}")
             else:
                 state.ocr_failed_files.append(pdf_file)
+                print(f"Failed to process {pdf_file}")
             state.save()
     
     except Exception as e:

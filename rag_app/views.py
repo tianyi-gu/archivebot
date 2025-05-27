@@ -102,23 +102,38 @@ def scrape(request):
 def ocr(request):
     if request.method == 'POST':
         try:
+            data = json.loads(request.body)
+            years_filter = data.get('years', None)  # Optional years filter
+            
             state = PipelineState.get_instance()
             if state.ocr_in_progress:
                 return JsonResponse({"error": "OCR already in progress"}, status=400)
             
             def ocr_thread():
                 try:
+                    print(f"Starting OCR processing with years filter: {years_filter}")
                     state.ocr_in_progress = True
+                    state.ocr_completed_files = []
+                    state.ocr_failed_files = []
+                    state.ocr_total_files = 0
                     state.save()
-                    run_ocr(state)
+                    print("OCR state initialized")
+                    
+                    run_ocr(state, years_filter=years_filter)
+                    print("OCR completed successfully")
+                except Exception as e:
+                    print(f"Error in OCR thread: {e}")
                 finally:
                     state.ocr_in_progress = False
                     state.save()
+                    print("OCR thread finished")
             
             threading.Thread(target=ocr_thread, daemon=True).start()
+            print("OCR thread started")
             
             return JsonResponse({"message": "OCR started"})
         except Exception as e:
+            print(f"Error in OCR view: {e}")
             return JsonResponse({"error": str(e)}, status=500)
     
     return JsonResponse({"error": "Method not allowed"}, status=405)
