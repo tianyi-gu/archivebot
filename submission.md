@@ -14,7 +14,7 @@ The system enables users to choose selected document collections to process and 
 
 This submission contains a fully functional web application built with Django. To run and evaluate the project:
 
-1. **Setup**: Navigate to the `archivebot_project` directory and follow the installation instructions in the main README.md file
+1. **Setup**: Navigate to the root directory of the project and follow the installation instructions in the README.md file
 2. **Running**: Use the provided Django management commands to start the development server
 3. **Testing**: Upload sample documents through the web interface and interact with the chat system to see the RAG capabilities in action
 
