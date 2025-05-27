@@ -1,6 +1,8 @@
 # ArchiveBot
 
-This project is a Django-based RAG (Retrieval-Augmented Generation) system that enables intuitive, conversational access to archived materials from the Oliver Wendell Holmes library.
+Archivebot is a Django-based RAG (Retrieval-Augmented Generation) system that enables intuitive, conversational access to archival material. Present-day researchers interested in working with historical documents are forced to menially sift through thousands of pages of documents. Despite digitization and search functionality, this process is not only time-consuming, but also error-prone. 
+
+This project aims to alleviate this issue by allowing users to query the archive through natural language, and receive a summary of the most relevant information from the archive.
 
 ## Setup Instructions
 
@@ -46,7 +48,5 @@ This project is a Django-based RAG (Retrieval-Augmented Generation) system that 
 4. Generate embeddings for the chunks
 5. Load a language model
 6. Chat with the system to query the archived materials
-
-This project aims to develop an AI-powered retrieval-augmented generation (RAG) system that  enables intuitive, conversational access to archived materials from the Oliver Wendell Holmes  library. This would be available to students, librarians, faculty, and any others who are curious about  engaging with the school's history in an accessible manner. This project will enable users to leverage  natural language search, in order for users to be able to retrieve summaries and context-rich  information from historical documents.
 
 Developed in the Computer Science 600 Research and Development Class at Phillips Academy. 

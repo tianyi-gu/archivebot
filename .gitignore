@@ -4,7 +4,7 @@
 chunked_corpus/*
 .DS_Store
 
-# Django specific
+# Django 
 *.log
 *.pot
 *.pyc
