@@ -200,6 +200,8 @@
         </div>
     </div>
     
+    <button id="resetBtn" class="btn btn-warning">Reset State</button>
+    
     <script>
         // Get CSRF token
         function getCookie(name) {
@@ -474,6 +476,31 @@
                 chatContainer.appendChild(messageDiv);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
+            
+            // Reset button
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset all state? This will clear loaded models and embeddings.')) {
+                    fetch('/api/reset_state', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                        } else {
+                            alert(data.message);
+                            updateStatus(); // Refresh the status display
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error resetting state');
+                    });
+                }
+            });
         });
     </script>
 </body>
