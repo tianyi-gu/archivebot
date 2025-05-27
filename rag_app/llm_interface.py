@@ -72,7 +72,23 @@ def load_embedded_chunks(embeddings_path):
         return None
 
 def rag_response(query, embedded_chunks, llm, top_k=3, max_context_length=3000):
-    from embed_chunks import vector_search
+    # Add scripts directory to Python path
+    import sys
+    import os
+    from django.conf import settings
+    
+    scripts_path = os.path.join(settings.BASE_DIR, "scripts")
+    if scripts_path not in sys.path:
+        sys.path.insert(0, scripts_path)
+    
+    # Import after adding to sys.path
+    try:
+        from embed_chunks import vector_search # type: ignore
+    except ImportError as e:
+        print(f"Error importing embed_chunks: {e}")
+        print(f"Scripts path: {scripts_path}")
+        print(f"Path exists: {os.path.exists(scripts_path)}")
+        raise
     
     # retrieve the relevant chunks from the embeddings
     results = vector_search(query, embedded_chunks, top_k=top_k)

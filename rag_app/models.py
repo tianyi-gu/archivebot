@@ -38,12 +38,10 @@ class PipelineState(models.Model):
         return instance
 
 class ChatMessage(models.Model):
-    sender = models.CharField(max_length=10, choices=[('user', 'User'), ('bot', 'Bot')])
-    content = models.TextField()
+    message = models.TextField()
+    response = models.TextField()
+    is_user = models.BooleanField(default=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     
-    class Meta:
-        ordering = ['timestamp']
-    
     def __str__(self):
-        return f"{self.sender}: {self.content[:50]}..." 
+        return f"Message: {self.message[:50]}..." 
