@@ -49,6 +49,12 @@ This project aims to alleviate this issue by allowing users to query the archive
 5. Load a language model
 6. Chat with the system to query the archived materials
 
+## Known Issues
+- Progress updating and sometimes hangs on retrieving pdfs
+- Excessive amounts of time when loading (might be unavoidable but maybe a way to speed things up)
+- Database resetting/not resetting when it should/shouldn't
+- Processing years outside of what is user-specified
+
 ## To-dos and Future Steps
 - Filtering based on article type (excluding Eighth Page articles, etc.)
 - Linking to view original article PDF
