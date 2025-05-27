@@ -21,7 +21,7 @@ This project aims to alleviate this issue by allowing users to query the archive
    python manage.py runserver
    ```
 
-4. Access the application at http://localhost:8000
+4. Access the application at http://127.0.0.1:8000/
 
 ## Features
 

@@ -1,6 +1,6 @@
 import argparse
 import os
-from llm_interface import LocalLLM, load_embedded_chunks, rag_response
+from rag_app.llm_interface import LocalLLM, load_embedded_chunks, rag_response
 
 def main():
     parser = argparse.ArgumentParser(description='ArchiveBot: RAG system for archived materials')

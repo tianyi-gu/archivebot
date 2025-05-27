@@ -83,13 +83,34 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# Data directories
+DATA_DIR = BASE_DIR / "data"
+RAW_CORPUS_DIR = DATA_DIR / "raw_corpus"
+TEXT_CORPUS_DIR = DATA_DIR / "text_corpus"
+CHUNKED_CORPUS_DIR = DATA_DIR / "chunked_corpus"
+
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+# Create static directory if it doesn't exist
+STATIC_APP_DIR = BASE_DIR / "rag_app" / "static"
+os.makedirs(STATIC_APP_DIR, exist_ok=True)
+os.makedirs(STATIC_APP_DIR / "rag_app" / "css", exist_ok=True)
+os.makedirs(STATIC_APP_DIR / "rag_app" / "js", exist_ok=True)
+os.makedirs(STATIC_APP_DIR / "rag_app" / "images", exist_ok=True)
+
+STATICFILES_DIRS = [
+    STATIC_APP_DIR,
+]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Create necessary directories
-os.makedirs(os.path.join(BASE_DIR, "raw_corpus"), exist_ok=True)
-os.makedirs(os.path.join(BASE_DIR, "text_corpus"), exist_ok=True)
-os.makedirs(os.path.join(BASE_DIR, "chunked_corpus"), exist_ok=True) 
+# Create data directories
+for directory in [DATA_DIR, RAW_CORPUS_DIR, TEXT_CORPUS_DIR, CHUNKED_CORPUS_DIR]:
+    os.makedirs(directory, exist_ok=True) 

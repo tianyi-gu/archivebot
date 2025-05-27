@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from django.conf import settings
 import os
 
 class Command(BaseCommand):
@@ -14,9 +15,25 @@ class Command(BaseCommand):
         call_command('migrate')
         
         # Create necessary directories
-        dirs = ['raw_corpus', 'text_corpus', 'chunked_corpus']
-        for directory in dirs:
+        directories = [
+            settings.DATA_DIR,
+            settings.RAW_CORPUS_DIR,
+            settings.TEXT_CORPUS_DIR,
+            settings.CHUNKED_CORPUS_DIR,
+        ]
+        
+        for directory in directories:
             os.makedirs(directory, exist_ok=True)
             self.stdout.write(f'Created directory: {directory}')
+        
+        # Create static directories
+        static_dirs = [
+            settings.BASE_DIR / "rag_app" / "static" / "rag_app" / "css",
+            settings.BASE_DIR / "rag_app" / "static" / "rag_app" / "js",
+        ]
+        
+        for directory in static_dirs:
+            os.makedirs(directory, exist_ok=True)
+            self.stdout.write(f'Created static directory: {directory}')
         
         self.stdout.write(self.style.SUCCESS('Setup complete!')) 
