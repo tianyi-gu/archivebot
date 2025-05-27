@@ -8,7 +8,7 @@ Archivebot is a RAG (Retrieval-Augmented Generation) based system that allows us
 
 **It is accessible here: [https://github.com/tianyi-gu/archivebot](https://github.com/tianyi-gu/archivebot).**
 
-The system enables users to choose selected document collections to process and index for semantic search, and provides an intelligent chat interface where users can ask questions about their archived content. The bot retrieves relevant document passages and generates contextual responses, making large document collections more accessible and queryable through natural language.
+The system enables users to choose selected document collections to process and index for semantic search, and provides a chat interface where users can ask questions about their archived content. The bot retrieves relevant document passages and generates contextual responses.
 
 ## How to Access and Evaluate This Project
 
