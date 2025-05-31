@@ -50,6 +50,7 @@ This project aims to alleviate this issue by allowing users to query the archive
 6. Chat with the system to query the archived materials
 
 ## Known Issues
+- Occasionally requires resetting embeddings and loading model after refreshing to run correctly.
 - Progress updating and sometimes hangs on retrieving pdfs
 - Excessive amounts of time when loading (might be unavoidable but maybe a way to speed things up)
 - Database resetting/not resetting when it should/shouldn't
