@@ -18,22 +18,32 @@ class LocalLLM:
         # load tokenizer and model
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         
-        # load in 8-bit quantization for memory efficiency if on CUDA
+        # Fix: Use torch_dtype and proper device handling
         if device == "cuda":
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_name, 
                 device_map="auto",
-                load_in_8bit=True
+                load_in_8bit=True,
+                torch_dtype=torch.float16
             )
         else:
-            self.model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
+            # For MPS and CPU, load normally without device_map
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                torch_dtype=torch.float16 if device == "mps" else torch.float32
+            )
+            # Use to_empty() for safer device transfer
+            if hasattr(self.model, 'to_empty'):
+                self.model = self.model.to_empty(device=device)
+            else:
+                self.model = self.model.to(device)
         
-        # create text generation 
+        # create text generation pipeline
         self.generator = pipeline(
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
-            device=device
+            device=0 if device == "cuda" else -1  
         )
         
         print("Model loaded successfully")
@@ -165,4 +175,5 @@ def main():
             print(f"\nResponse: {response}")
 
 if __name__ == "__main__":
+    main() 
     main() 
