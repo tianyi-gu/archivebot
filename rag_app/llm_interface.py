@@ -18,6 +18,10 @@ class LocalLLM:
         # load tokenizer and model
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         
+        # Add padding token if it doesn't exist
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+        
         # Fix: Use torch_dtype and proper device handling
         if device == "cuda":
             self.model = AutoModelForCausalLM.from_pretrained(
@@ -27,47 +31,57 @@ class LocalLLM:
                 torch_dtype=torch.float16
             )
         else:
-            # For MPS and CPU, load normally without device_map
+            # For MPS and CPU, use float32 for better stability
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_name,
-                torch_dtype=torch.float16 if device == "mps" else torch.float32
+                torch_dtype=torch.float32,
+                low_cpu_mem_usage=True
             )
-            # Use to_empty() for safer device transfer
-            if hasattr(self.model, 'to_empty'):
-                self.model = self.model.to_empty(device=device)
-            else:
-                self.model = self.model.to(device)
+            self.model = self.model.to(device)
         
-        # create text generation pipeline
-        self.generator = pipeline(
-            "text-generation",
-            model=self.model,
-            tokenizer=self.tokenizer,
-            device=0 if device == "cuda" else -1  
-        )
-        
+        # Don't use pipeline for better control
         print("Model loaded successfully")
     
-    def generate_response(self, prompt, max_new_tokens=512, temperature=0.7):
+    def generate_response(self, prompt, max_new_tokens=64, temperature=0.3):
         try:
-            response = self.generator(
-                prompt,
-                max_new_tokens=max_new_tokens,
-                do_sample=True,
-                temperature=temperature,
-                top_p=0.95,
-                num_return_sequences=1,
-                truncation=True
-            )
+            # Tokenize the input with shorter max length
+            inputs = self.tokenizer.encode(prompt, return_tensors="pt", truncation=True, max_length=1024)
+            inputs = inputs.to(self.device)
             
-            # extract the generated text
-            generated_text = response[0]['generated_text']
+            # Generate response with more conservative parameters
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    inputs,
+                    max_new_tokens=max_new_tokens,
+                    temperature=temperature,
+                    do_sample=True,
+                    top_p=0.8,
+                    top_k=40,
+                    repetition_penalty=1.2,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    early_stopping=True,
+                    num_beams=1  # Faster generation
+                )
             
-            # remove the prompt from the response
+            # Decode the response
+            generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            
+            # Remove the prompt from the response
             if generated_text.startswith(prompt):
                 generated_text = generated_text[len(prompt):].strip()
-                
-            return generated_text
+            
+            # Clean up the response - take first sentence or line
+            lines = generated_text.split('\n')
+            if lines:
+                response = lines[0].strip()
+                # If first line is too short, try to get a complete sentence
+                if len(response) < 20 and len(lines) > 1:
+                    response = lines[1].strip()
+            else:
+                response = generated_text.strip()
+            
+            return response if response else "I'm sorry, I couldn't generate a proper response."
         
         except Exception as e:
             print(f"Error generating response: {e}")
@@ -81,7 +95,7 @@ def load_embedded_chunks(embeddings_path):
         print(f"Error loading embeddings from {embeddings_path}: {e}")
         return None
 
-def rag_response(query, embedded_chunks, llm, top_k=3, max_context_length=3000):
+def rag_response(query, embedded_chunks, llm, top_k=2, max_context_length=800):
     # Add scripts directory to Python path
     import sys
     import os
@@ -124,18 +138,15 @@ def rag_response(query, embedded_chunks, llm, top_k=3, max_context_length=3000):
         else:
             context += new_chunk
     
-    # create prompt with context and query
-    prompt = f"""Below are some relevant documents:
-
+    # Shorter, more direct prompt
+    prompt = f"""Documents:
 {context}
 
-Based on the above documents, please answer the following question:
-{query}
-
+Question: {query}
 Answer:"""
     
-    # generate response using the LLM
-    return llm.generate_response(prompt)
+    # generate response using the LLM with shorter generation
+    return llm.generate_response(prompt, max_new_tokens=32, temperature=0.1)
 
 def main():
     import argparse
