@@ -12,228 +12,328 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
         
         .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            overflow: hidden;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-            opacity: 0.3;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.8;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .content {
-            padding: 40px;
-        }
-        
-        .container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-        
-        .panel {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-        }
-        
-        .panel:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-        }
-        
-        .panel h2 {
-            color: #2c3e50;
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #ecf0f1;
+        .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2563eb;
         }
         
-        .panel h2::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 50%;
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
         }
         
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 14px;
+        .nav-link {
+            color: #6b7280;
+            text-decoration: none;
             font-weight: 500;
+            padding: 0.5rem 1rem;
             border-radius: 8px;
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            position: relative;
-            overflow: hidden;
         }
         
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+        .nav-link:hover, .nav-link.active {
+            color: #2563eb;
+            background: rgba(37, 99, 235, 0.1);
         }
         
-        button:hover::before {
-            left: 100%;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        button:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        button:disabled::before {
+        .content-section {
             display: none;
+            padding: 5rem 2rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         
-        input, select {
-            width: 100%;
-            padding: 12px 16px;
-            margin: 8px 0;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            background: #fafafa;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        label {
-            font-weight: 500;
-            color: #2c3e50;
-            margin-bottom: 5px;
+        .content-section.active {
             display: block;
         }
         
-        .progress {
-            margin-top: 15px;
-            padding: 15px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
+        .hero-section {
+            text-align: center;
+            padding: 3rem 0 4rem;
         }
         
-        .progress div {
-            margin-bottom: 5px;
-            font-size: 14px;
+        .hero-title {
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1a1a1a;
+            line-height: 1.2;
         }
         
-        .progress span {
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: #6b7280;
+            max-width: 640px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.6;
+        }
+        
+        .cta-button {
+            background: #2563eb;
+            color: white;
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+        
+        .feature-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .feature-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .feature-title {
+            font-size: 1.125rem;
             font-weight: 600;
-            color: #2c3e50;
+            margin-bottom: 0.75rem;
+            color: #1a1a1a;
         }
         
-        .chat-panel {
+        .feature-description {
+            color: #6b7280;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+        
+        .pipeline-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .pipeline-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .pipeline-panel:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pipeline-panel h3 {
+            color: #1a1a1a;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #2563eb;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .pipeline-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .pipeline-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .pipeline-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            color: #1a1a1a;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .status-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.8rem;
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: #6b7280;
+        }
+        
+        .status-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-value {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .status-idle {
+            background: #9ca3af;
+        }
+        
+        .status-progress {
+            background: #f59e0b;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-loaded {
+            background: #10b981;
+        }
+        
+        .chat-section {
             grid-column: 1 / -1;
-            background: white;
-            border-radius: 15px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
         }
         
         .chat-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 20px 25px;
-            font-size: 1.2rem;
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .chat-title {
+            color: #1a1a1a;
+            font-size: 1.125rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
         
         .chat-container {
             height: 400px;
             overflow-y: auto;
-            padding: 20px;
-            background: #fafafa;
+            padding: 1.5rem;
+            background: #ffffff;
         }
         
         .chat-container::-webkit-scrollbar {
@@ -241,29 +341,23 @@
         }
         
         .chat-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
+            background: #f1f5f9;
         }
         
         .chat-container::-webkit-scrollbar-thumb {
-            background: #bbb;
+            background: #cbd5e1;
             border-radius: 3px;
         }
         
-        .chat-container::-webkit-scrollbar-thumb:hover {
-            background: #999;
-        }
-        
         .message {
-            margin-bottom: 15px;
-            padding: 15px 20px;
-            border-radius: 18px;
+            margin-bottom: 1rem;
+            padding: 0.875rem 1rem;
+            border-radius: 12px;
             max-width: 80%;
-            position: relative;
-            animation: slideIn 0.3s ease-out;
+            animation: messageSlide 0.3s ease-out;
         }
         
-        @keyframes slideIn {
+        @keyframes messageSlide {
             from {
                 opacity: 0;
                 transform: translateY(10px);
@@ -275,63 +369,67 @@
         }
         
         .user-message {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #2563eb;
             color: white;
             margin-left: auto;
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 4px;
         }
         
         .bot-message {
-            background: white;
-            color: #2c3e50;
-            border: 1px solid #ecf0f1;
-            border-bottom-left-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background: #f8fafc;
+            color: #1a1a1a;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
         }
         
-        .chat-input-container {
-            padding: 20px 25px;
-            background: white;
-            border-top: 1px solid #ecf0f1;
+        .chat-input-area {
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
             display: flex;
-            gap: 12px;
+            gap: 0.75rem;
             align-items: center;
         }
         
-        .chat-input-container input {
-            margin: 0;
+        .chat-input {
             flex: 1;
+            padding: 0.75rem 1rem;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 24px;
+            color: #1a1a1a;
+            font-size: 0.875rem;
         }
         
-        .chat-input-container button {
-            margin: 0;
-            white-space: nowrap;
+        .chat-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
         
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 8px;
+        .chat-input::placeholder {
+            color: #9ca3af;
         }
         
-        .status-idle {
-            background: #95a5a6;
+        .send-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
         }
         
-        .status-progress {
-            background: #e74c3c;
-            animation: pulse 1.5s infinite;
-        }
-        
-        .status-loaded {
-            background: #27ae60;
+        .send-button:hover {
+            background: #1d4ed8;
         }
         
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.7; }
         }
         
         @media (max-width: 768px) {
@@ -355,95 +453,222 @@
 </head>
 <body>
     <div class="main-container">
-        <div class="header">
-            <h1>ArchiveBot</h1>
-            <div class="subtitle">RAG Pipeline</div>
-        </div>
-        
-        <div class="content">
-            <div class="container">
-        <div class="panel">
-            <h2>1. Web Scraping</h2>
-            <div>
-                <label for="years">Years to scrape (comma-separated):</label>
-                <input type="text" id="years" placeholder="2023,2022,2021">
-                <button id="scrapeBtn">Start Scraping</button>
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <div class="logo">ArchiveBot</div>
+            <div class="nav-links">
+                <span class="nav-link active" onclick="showSection('home')">Home</span>
+                <span class="nav-link" onclick="showSection('pipeline')">Pipeline</span>
             </div>
-            <div class="progress" id="scrapeProgress">
-                <div>Status: <span id="scrapeStatus">Not started</span></div>
-                <div>Current year: <span id="scrapeYear">None</span></div>
-                <div>Progress: <span id="scrapeCompleted">0</span>/<span id="scrapeTotal">0</span></div>
+        </nav>
+
+        <!-- Home Section -->
+        <section id="home" class="content-section active">
+            <div class="hero-section">
+                <h1 class="hero-title">ArchiveBot</h1>
+                <p class="hero-subtitle">
+                    Transform your document archives into intelligent, searchable knowledge bases with cutting-edge RAG technology.
+                </p>
+                <button class="cta-button" onclick="showSection('pipeline')">View Pipeline</button>
             </div>
-        </div>
-        
-        <div class="panel">
-            <h2>2. OCR Processing</h2>
-            <div>
-                <button id="ocrBtn">Start OCR</button>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">📄</span>
+                    <h3 class="feature-title">Document Processing</h3>
+                    <p class="feature-description">
+                        Automated OCR extraction from PDF archives with support for multiple document formats and layouts.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">🔍</span>
+                    <h3 class="feature-title">Semantic Search</h3>
+                    <p class="feature-description">
+                        Automated OCR, semantic chunking, and vector embeddings ensure maximum information extraction and retrieval accuracy.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">💬</span>
+                    <h3 class="feature-title">Natural Language Queries</h3>
+                    <p class="feature-description">
+                        Ask questions about archived content in plain English. The system retrieves relevant passages and generates contextual responses.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">⚡</span>
+                    <h3 class="feature-title">Efficient Processing</h3>
+                    <p class="feature-description">
+                        Process massive document collections efficiently with our optimized pipeline designed for enterprise-scale deployments.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">🏠</span>
+                    <h3 class="feature-title">Local Deployment</h3>
+                    <p class="feature-description">
+                        All processing currently happens locally. Your sensitive documents never leave your infrastructure, ensuring complete data privacy.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <span class="feature-icon">🔧</span>
+                    <h3 class="feature-title">Modular Pipeline</h3>
+                    <p class="feature-description">
+                        Step-by-step processing workflow from web scraping to chat interface. Each component can be run independently.
+                    </p>
+                </div>
             </div>
-            <div class="progress" id="ocrProgress">
-                <div>Status: <span id="ocrStatus">Not started</span></div>
-                <div>Current file: <span id="ocrFile">None</span></div>
-                <div>Progress: <span id="ocrCompleted">0</span>/<span id="ocrTotal">0</span></div>
+        </section>
+
+        <!-- Pipeline Section -->
+        <section id="pipeline" class="content-section">
+            <div class="pipeline-container">
+                <div class="pipeline-panel">
+                    <h3><span class="step-number">1</span>Web Scraping</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="years">Years to scrape (comma-separated):</label>
+                        <input type="text" id="years" class="form-input" placeholder="2023,2022,2021">
+                    </div>
+                    <button id="scrapeBtn" class="pipeline-button">Start Scraping</button>
+                    <div class="status-panel">
+                        <div class="status-row">
+                            <span>Status:</span>
+                            <span id="scrapeStatus" class="status-value">Not started</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Current year:</span>
+                            <span id="scrapeYear" class="status-value">None</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Progress:</span>
+                            <span class="status-value"><span id="scrapeCompleted">0</span>/<span id="scrapeTotal">0</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pipeline-panel">
+                    <h3><span class="step-number">2</span>OCR Processing</h3>
+                    <button id="ocrBtn" class="pipeline-button">Start OCR</button>
+                    <div class="status-panel">
+                        <div class="status-row">
+                            <span>Status:</span>
+                            <span id="ocrStatus" class="status-value">Not started</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Current file:</span>
+                            <span id="ocrFile" class="status-value">None</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Progress:</span>
+                            <span class="status-value"><span id="ocrCompleted">0</span>/<span id="ocrTotal">0</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pipeline-panel">
+                    <h3><span class="step-number">3</span>Text Chunking</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="chunkMethod">Chunking method:</label>
+                        <select id="chunkMethod" class="form-select">
+                            <option value="semantic">Hierarchical Chunking</option>
+                            <option value="fixed">Fixed-Size Chunking</option>
+                        </select>
+                    </div>
+                    <button id="chunkBtn" class="pipeline-button">Start Chunking</button>
+                    <div class="status-panel">
+                        <div class="status-row">
+                            <span>Status:</span>
+                            <span id="chunkStatus" class="status-value">Not started</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Current file:</span>
+                            <span id="chunkFile" class="status-value">None</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Progress:</span>
+                            <span class="status-value"><span id="chunkCompleted">0</span>/<span id="chunkTotal">0</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pipeline-panel">
+                    <h3><span class="step-number">4</span>Embedding Generation</h3>
+                    <button id="embedBtn" class="pipeline-button">Generate Embeddings</button>
+                    <div class="status-panel">
+                        <div class="status-row">
+                            <span>Status:</span>
+                            <span id="embedStatus" class="status-value">Not started</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Progress:</span>
+                            <span class="status-value"><span id="embedCompleted">0</span>/<span id="embedTotal">0</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pipeline-panel">
+                    <h3><span class="step-number">5</span>Load Language Model</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="modelName">Model name:</label>
+                        <input type="text" id="modelName" class="form-input" value="TinyLlama/TinyLlama-1.1B-Chat-v1.0">
+                    </div>
+                    <button id="loadModelBtn" class="pipeline-button">Load Model</button>
+                    <div class="status-panel">
+                        <div class="status-row">
+                            <span>Status:</span>
+                            <span id="modelStatus" class="status-value">Not loaded</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Model:</span>
+                            <span id="loadedModel" class="status-value">None</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="panel">
-            <h2>3. Text Chunking</h2>
-            <div>
-                <label for="chunkMethod">Chunking method:</label>
-                <select id="chunkMethod">
-                    <option value="semantic">Hierarchical Chunking</option>
-                    <option value="fixed">Fixed-Size Chunking</option>
-                </select>
-                <button id="chunkBtn">Start Chunking</button>
-            </div>
-            <div class="progress" id="chunkProgress">
-                <div>Status: <span id="chunkStatus">Not started</span></div>
-                <div>Current file: <span id="chunkFile">None</span></div>
-                <div>Progress: <span id="chunkCompleted">0</span>/<span id="chunkTotal">0</span></div>
-            </div>
-        </div>
-        
-        <div class="panel">
-            <h2>4. Embedding Generation</h2>
-            <div>
-                <button id="embedBtn">Generate Embeddings</button>
-            </div>
-            <div class="progress" id="embedProgress">
-                <div>Status: <span id="embedStatus">Not started</span></div>
-                <div>Progress: <span id="embedCompleted">0</span>/<span id="embedTotal">0</span></div>
-            </div>
-        </div>
-            </div>
-            
-            <div class="panel">
-                <h2>5. Load Language Model</h2>
-        <div>
-            <label for="modelName">Model name:</label>
-            <input type="text" id="modelName" value="TinyLlama/TinyLlama-1.1B-Chat-v1.0">
-            <button id="loadModelBtn">Load Model</button>
-        </div>
-        <div class="progress" id="modelProgress">
-            <div>Status: <span id="modelStatus">Not loaded</span></div>
-            <div>Model: <span id="loadedModel">None</span></div>
-            </div>
-            </div>
-            
-            <div class="panel chat-panel">
+
+            <div class="chat-section">
                 <div class="chat-header">
-                    6. Chat with ArchiveBot
+                    <div class="chat-title">
+                        <span class="step-number">6</span>Chat with ArchiveBot
+                    </div>
                 </div>
                 <div class="chat-container" id="chatContainer"></div>
-                <div class="chat-input-container">
-                    <input type="text" id="queryInput" placeholder="Ask a question about your documents...">
-                    <button id="sendBtn">Send</button>
+                <div class="chat-input-area">
+                    <input type="text" id="queryInput" class="chat-input" placeholder="Ask a question about your documents...">
+                    <button id="sendBtn" class="send-button">Send</button>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
     
     <script>
+        // Navigation functionality
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Add active class to clicked nav link
+            event.target.classList.add('active');
+            
+            // Start status updates when pipeline section is shown
+            if (sectionName === 'pipeline') {
+                updateStatus();
+            }
+        }
+
         // Function to update the UI with the current pipeline state
         function updateStatus() {
             fetch('/api/status')
@@ -496,9 +721,32 @@
         
         // Initialize and set up event listeners
         document.addEventListener('DOMContentLoaded', function() {
-            // Start periodic status updates
-            updateStatus();
-            setInterval(updateStatus, 2000);
+            // Only start status updates when on pipeline page
+            let statusInterval;
+            
+            // Update status immediately if on pipeline page
+            if (document.getElementById('pipeline').classList.contains('active')) {
+                updateStatus();
+                statusInterval = setInterval(updateStatus, 2000);
+            }
+            
+            // Override showSection to handle status updates
+            window.originalShowSection = showSection;
+            window.showSection = function(sectionName) {
+                originalShowSection(sectionName);
+                
+                // Clear existing interval
+                if (statusInterval) {
+                    clearInterval(statusInterval);
+                    statusInterval = null;
+                }
+                
+                // Start status updates for pipeline page
+                if (sectionName === 'pipeline') {
+                    updateStatus();
+                    statusInterval = setInterval(updateStatus, 2000);
+                }
+            };
             
             // Scraping button
             document.getElementById('scrapeBtn').addEventListener('click', function() {
