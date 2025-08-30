@@ -5,7 +5,7 @@ import pickle
 from typing import List, Dict, Any
 
 class LocalLLM:
-    def __init__(self, model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0", device=None): 
+    def __init__(self, model_name="microsoft/DialoGPT-medium", device=None): 
         print(f"Loading model: {model_name}")
         
         # auto-detect device if not specified
@@ -42,50 +42,84 @@ class LocalLLM:
         # Don't use pipeline for better control
         print("Model loaded successfully")
     
-    def generate_response(self, prompt, max_new_tokens=64, temperature=0.3):
+    def generate_response(self, prompt, max_new_tokens=50, temperature=0.2):
         try:
-            # Tokenize the input with shorter max length
-            inputs = self.tokenizer.encode(prompt, return_tensors="pt", truncation=True, max_length=1024)
-            inputs = inputs.to(self.device)
+            # Better prompt length handling
+            if len(prompt) > 1200:
+                prompt = prompt[-1200:]
             
-            # Generate response with more conservative parameters
+            # Tokenize with better parameters
+            inputs = self.tokenizer(
+                prompt, 
+                return_tensors="pt", 
+                truncation=True, 
+                max_length=400,
+                padding=False
+            )
+            inputs = {k: v.to(self.device) for k, v in inputs.items()}
+            
+            # Faster generation parameters
             with torch.no_grad():
                 outputs = self.model.generate(
-                    inputs,
+                    **inputs,
                     max_new_tokens=max_new_tokens,
                     temperature=temperature,
                     do_sample=True,
-                    top_p=0.8,
-                    top_k=40,
-                    repetition_penalty=1.2,
+                    top_p=0.9,
+                    top_k=30,  # Reduced from 40
+                    repetition_penalty=1.1,  # Reduced from 1.15
                     pad_token_id=self.tokenizer.eos_token_id,
                     eos_token_id=self.tokenizer.eos_token_id,
-                    early_stopping=True,
-                    num_beams=1  # Faster generation
+                    use_cache=True
                 )
             
-            # Decode the response
-            generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            # Decode only the new tokens
+            input_length = inputs['input_ids'].shape[1]
+            generated_tokens = outputs[0][input_length:]
+            generated_text = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
             
-            # Remove the prompt from the response
-            if generated_text.startswith(prompt):
-                generated_text = generated_text[len(prompt):].strip()
+            # Simpler response cleaning
+            response = generated_text.strip()
             
-            # Clean up the response - take first sentence or line
-            lines = generated_text.split('\n')
-            if lines:
-                response = lines[0].strip()
-                # If first line is too short, try to get a complete sentence
-                if len(response) < 20 and len(lines) > 1:
-                    response = lines[1].strip()
-            else:
-                response = generated_text.strip()
+            # Remove common artifacts
+            response = response.replace("</s>", "").replace("<s>", "")
             
-            return response if response else "I'm sorry, I couldn't generate a proper response."
-        
+            # Stop at first natural break point
+            stop_phrases = ["\n\n", "Question:", "QUESTION:"]
+            for phrase in stop_phrases:
+                if phrase in response:
+                    response = response.split(phrase)[0]
+                    break
+            
+            # Take first complete sentence if too long
+            if len(response) > 150:
+                sentences = response.split('.')
+                if len(sentences) > 1:
+                    response = sentences[0].strip() + "."
+            
+            return response if response else "I couldn't find relevant information to answer your question."
+            
         except Exception as e:
             print(f"Error generating response: {e}")
-            return "I encountered an error while generating a response."
+            return "Error generating response."
+
+    def validate_response(self, response, query):
+        """Validate if the response makes sense"""
+        if not response or len(response.strip()) < 10:
+            return False
+        
+        # Check for repetitive text
+        words = response.split()
+        if len(set(words)) < len(words) * 0.5:  # Too much repetition
+            return False
+        
+        # Check if response is just repeating the query
+        query_words = set(query.lower().split())
+        response_words = set(response.lower().split())
+        if len(query_words.intersection(response_words)) > len(query_words) * 0.8:
+            return False
+        
+        return True
 
 def load_embedded_chunks(embeddings_path):
     try:
@@ -95,7 +129,7 @@ def load_embedded_chunks(embeddings_path):
         print(f"Error loading embeddings from {embeddings_path}: {e}")
         return None
 
-def rag_response(query, embedded_chunks, llm, top_k=2, max_context_length=800):
+def rag_response(query, embedded_chunks, llm, top_k=2, max_context_length=600):
     # Add scripts directory to Python path
     import sys
     import os
@@ -117,36 +151,33 @@ def rag_response(query, embedded_chunks, llm, top_k=2, max_context_length=800):
     # retrieve the relevant chunks from the embeddings
     results = vector_search(query, embedded_chunks, top_k=top_k)
     
-    # construct the context from the retrieved chunks
-    context = ""
+    # Faster context construction
+    context_parts = []
     for i, result in enumerate(results):
         chunk_text = result['chunk']['text']
         source = result['chunk']['metadata']['source']
-        date = result['chunk']['metadata']['date']
         
-        # add chunk to context
-        new_chunk = f"Document {i+1} (Source: {source}, Date: {date}):\n{chunk_text}\n\n"
+        # Shorter chunks for faster processing
+        clean_text = chunk_text.strip()
+        if len(clean_text) > 250:
+            clean_text = clean_text[:250] + "..."
         
-        # check if adding this chunk would exceed max_context_length
-        if len(context + new_chunk) > max_context_length:
-            # truncate the chunk to fit within max_context_length
-            available_space = max_context_length - len(context)
-            if available_space > 100:
-                new_chunk = new_chunk[:available_space] + "...\n\n"
-                context += new_chunk
-            break
-        else:
-            context += new_chunk
+        context_parts.append(f"[{source}] {clean_text}")
     
-    # Shorter, more direct prompt
+    if not context_parts:
+        return "I couldn't find relevant information to answer your question."
+    
+    context = "\n\n".join(context_parts)
+    
+    # Shorter, simpler prompt
     prompt = f"""Documents:
 {context}
 
 Question: {query}
-Answer:"""
+
+Answer based on the documents:"""
     
-    # generate response using the LLM with shorter generation
-    return llm.generate_response(prompt, max_new_tokens=32, temperature=0.1)
+    return llm.generate_response(prompt, max_new_tokens=40, temperature=0.1)
 
 def main():
     import argparse
