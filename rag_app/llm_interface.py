@@ -5,7 +5,7 @@ import pickle
 from typing import List, Dict, Any
 
 class LocalLLM:
-    def __init__(self, model_name="microsoft/DialoGPT-medium", device=None): 
+    def __init__(self, model_name="TinyLlama/TinyLlama-1.1B-Chat-v1.0", device=None): 
         print(f"Loading model: {model_name}")
         
         # auto-detect device if not specified
